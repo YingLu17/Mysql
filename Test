@@ -1,0 +1,59 @@
+#include <iostream>
+#include <map>
+#include <string>
+#include <memory>
+#include <cstring>
+#include <windows.h>
+#include "mysql_driver.h"
+#include "mysql_connection.h"
+#include "cppconn/driver.h"
+#include "cppconn/statement.h"
+#include "cppconn/prepared_statement.h"
+#include "cppconn/metadata.h"
+#include "cppconn/exception.h"
+#include <winnt.h>
+#include <fstream>
+#include "stdio.h"
+#include "stdlib.h"
+
+using namespace std;
+using namespace sql;
+
+
+int main()
+{
+	sql::mysql::MySQL_Driver *driver = 0;
+	sql::Connection *conn = 0;
+	ifstream fin("E:\\Test\\000_0.jpg", ios::binary);
+	istream  &is=fin;
+	fin.seekg (0, ios::end);
+	int length = fin.tellg();
+	fin.seekg (0, ios::beg);
+	cout << "length:" << length << endl;
+	try
+	{
+		driver = sql::mysql::get_mysql_driver_instance();
+		conn = driver->connect("tcp://192.168.0.1:3306/faceid", "root", "1");
+		cout << "连接成功" << endl;
+		sql::Statement *stmt  = conn->createStatement();
+	    stmt->execute("set names 'gbk'");
+		delete stmt;
+		int id = 106;
+		sql::PreparedStatement * stat = conn->prepareStatement("INSERT INTO image(imageid,data) values(?,?)");
+		stat->setInt(1,id);
+		stat->setBlob(2,&is);
+	
+		//cout << sqltest << endl;
+		stat->execute();
+		delete stat;
+		delete conn;
+	}
+	catch(SQLException e)
+	{
+		cout << "erroe.code"<<e.getErrorCode() << endl;
+	}
+	fin.clear();
+	is.clear();
+	system("pause");
+	return 0;
+}
